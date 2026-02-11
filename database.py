@@ -16,8 +16,15 @@ def init_database():
     )
     """)
 
-    cur.execute("CREATE INDEX idx_brand ON aircraft(brand)")
-    cur.execute("CREATE INDEX idx_model ON aircraft(model)")
+    conn.commit()
+    conn.close()
+
+
+def clear_db():
+    conn = sqlite3.connect("aircraft.db")
+    cur = conn.cursor()
+    
+    cur.execute("DELETE FROM aircraft")
 
     conn.commit()
     conn.close()
@@ -27,7 +34,7 @@ def insert_aircraft(aircrafts):
     cur = conn.cursor()
 
     cur.executemany("""
-    INSERT OR IGNORE INTO aircraft (url, brand, model, eur_price, foreign_price, currency)
+    INSERT INTO aircraft (url, brand, model, eur_price, foreign_price, currency)
     VALUES (?, ?, ?, ?, ?, ?)
     """, [(a["url"], a["brand"], a["model"], a["eur_price"], a["foreign_price"], a["currency"])
           for a in aircrafts])
