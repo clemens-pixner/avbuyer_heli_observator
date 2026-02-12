@@ -10,38 +10,6 @@ EXCHANGE_MAP = {
 
 base_url = "https://www.avbuyer.com"
 
-def name_split(item):
-    name = item.find("h2", class_="item-title").get_text(strip=True)
-    split = name.split()
-
-    if split[0] == "McDonnell":
-        brand = " ".join(split[0:2])
-        model = " ".join(split[2:])
-    else: 
-        brand = split[0]
-        model = " ".join(split[1:])
-    
-    return brand, model 
-
-def price_extraction(item):
-    price_raw = item.find("div", class_="price").get_text(strip=True)
-    tp = re.search(r"([£$€])([\d,]+)", price_raw)
-
-    if not tp:
-        return None, None, None
-    
-    currency = tp.group(1)
-    orig_price = float(tp.group(2).replace(",", ""))
-
-    if currency == "€":
-        eur_price = orig_price
-        foreign_price = None
-    else:
-        eur_price = orig_price * EXCHANGE_MAP[currency]
-        foreign_price = orig_price
-
-    return currency, eur_price, foreign_price
-
 def scrape_page():
 
     page = 1
@@ -80,6 +48,35 @@ def scrape_page():
         page += 1   
     return aircrafts    
 
+def name_split(item):
+    name = item.find("h2", class_="item-title").get_text(strip=True)
+    split = name.split()
 
+    if split[0] == "McDonnell":
+        brand = " ".join(split[0:2])
+        model = " ".join(split[2:])
+    else: 
+        brand = split[0]
+        model = " ".join(split[1:])
+    
+    return brand, model
 
- 
+def price_extraction(item):
+    price_raw = item.find("div", class_="price").get_text(strip=True)
+    tp = re.search(r"([£$€])([\d,]+)", price_raw)
+
+    if not tp:
+        return None
+    
+    currency = tp.group(1)
+    orig_price = float(tp.group(2).replace(",", ""))
+
+    if currency == "€":
+        eur_price = orig_price
+        foreign_price = None
+    else:
+        eur_price = orig_price * EXCHANGE_MAP[currency]
+        foreign_price = orig_price
+
+    return currency, eur_price, foreign_price
+
