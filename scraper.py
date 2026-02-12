@@ -28,7 +28,7 @@ def price_extraction(item):
     tp = re.search(r"([£$€])([\d,]+)", price_raw)
 
     if not tp:
-        return None
+        return None, None, None
     
     currency = tp.group(1)
     orig_price = float(tp.group(2).replace(",", ""))
