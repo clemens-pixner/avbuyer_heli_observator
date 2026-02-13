@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from datetime import datetime
 import re
 import requests
 from urllib.parse import urljoin
@@ -14,7 +15,8 @@ def scrape_page():
 
     page = 1
     aircrafts = []
-
+    run_time = datetime.now().isoformat(timespec="seconds")
+    
     while True:
         url = f"https://www.avbuyer.com/aircraft/helicopter/page-{page}"
         r = requests.get(url)
@@ -30,23 +32,27 @@ def scrape_page():
             url = urljoin(base_url, item.a.get("href")) 
             brand, model = name_split(item)
             result = price_extraction(item)
+
             if result is None:
                 continue
+
             currency, eur_price, foreign_price = result
-             
+
             aircraft = {
                 "url": url,
                 "brand": brand,
                 "model": model,
                 "eur_price": eur_price,
                 "foreign_price": foreign_price,
-                "currency": currency
+                "currency": currency,
+                "timestamp": run_time,
+                "active": 1
             }
 
             aircrafts.append(aircraft)
             
         page += 1   
-    return aircrafts    
+    return aircrafts, run_time    
 
 def name_split(item):
     name = item.find("h2", class_="item-title").get_text(strip=True)
