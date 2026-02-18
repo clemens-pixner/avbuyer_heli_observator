@@ -64,6 +64,15 @@ def name_split(item):
     else: 
         brand = split[0]
         model = " ".join(split[1:])
+
+    if brand == "Airbus":
+        brand = "Airbus/Eurocopter"
+
+    if brand == "MD" or brand == "McDonnell Douglas" or brand == "Hughes":
+        brand = "McDonnell/Hughes"
+
+    if brand == "Agusta" or brand == "Leonardo":
+        brand = "Agusta/Leonardo"
     
     return brand, model
 
