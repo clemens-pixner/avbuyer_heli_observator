@@ -181,6 +181,7 @@ col_5, col_6 = st.columns(2, border=True)
 
 with col_5:
     st.write("Under construction")
+    st.write("Primary:", st.get_option("theme.primaryColor"))
 
 with col_6:
     st.markdown(":blue-background[Raw data]")
