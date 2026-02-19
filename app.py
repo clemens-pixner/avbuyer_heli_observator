@@ -67,7 +67,21 @@ with col_2:
     with col_3:
         st.markdown(":blue-background[Filter]")
         brands = brand_selectbox(df)
-        st.selectbox("Brand", brands, index=None, placeholder="Select brand...")
+        selected_brand = st.selectbox(
+            "Brand",
+            brands, 
+            index=None, 
+            placeholder="Select brand..."
+        )
+
+        if selected_brand is None:
+            pass
+        else:   
+            brand_df = df[df["brand"] == selected_brand].copy()
+            brand_df["eur_price"] = pd.to_numeric(brand_df["eur_price"], errors="coerce")
+            brand_df = brand_df.dropna(subset=["eur_price"])
+            max_price = int(brand_df["eur_price"].max())
+            price_range = st.slider("Price range", 0, max_price, (0, max_price))
             
 
     with col_4:
