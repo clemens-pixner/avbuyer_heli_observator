@@ -4,6 +4,8 @@ import streamlit as st
 from database import db_conn, init_database, insert_aircraft
 from scraper import scrape_page
 
+st.set_page_config(layout="wide")
+
 def dataframe(df):
     show_df = df.drop(columns=["aircraft_id", "timestamp", "active"]).copy()
 
@@ -34,6 +36,16 @@ def dataframe(df):
             width="stretch"
         )
 
+def brand_selectbox(df):
+    brands = pd.read_sql_query("""
+        SELECT DISTINCT brand
+        FROM aircraft
+        WHERE active = 1
+        ORDER BY brand
+        """, conn)
+    
+    return brands
+
 init_database()
 
 with db_conn() as conn:
@@ -41,25 +53,55 @@ with db_conn() as conn:
 
 st.title("Helicopter market-dashboard")
 
-col_1, col_2 = st.columns(2, border=True)
+col_1, col_2, = st.columns([0.3, 0.7], border=True)
 
 with col_1:
-    st.markdown(":blue-background[Chart]")
+    st.markdown(":blue-background[Listing overview]")
     chart_df = df.groupby("brand").size().reset_index(name="Listings")
     chart_df = chart_df.rename(columns={"brand": "Brand"})
     st.bar_chart(chart_df, x="Brand", y="Listings")
 
 with col_2:
+    col_3, col_4 = st.columns([0.35, 0.65], border=True)
+
+    with col_3:
+        st.markdown(":blue-background[Filter]")
+        brands = brand_selectbox(df)
+        st.selectbox("Brand", brands, index=None, placeholder="Select brand...")
+            
+
+    with col_4:
+        st.write(":blue-background[Results]")
+
+col_5, col_6 = st.columns(2, border=True)
+
+with col_5:
+    st.write("Under construction")
+
+with col_6:
     st.markdown(":blue-background[Raw data]")
     dataframe(df)
 
 with st.container(border=True):
         col_left, col_right = st.columns([1, 1], vertical_alignment="center")
         with col_left:
+
+            if "update_ok" not in st.session_state:
+                st.session_state.update_ok = False
+
             if st.button("Update data"):
-                aircrafts, run_time = scrape_page()
-                insert_aircraft(aircrafts, run_time)
-                st.rerun()
+                st.session_state.update_ok = False
+                try:
+                    with st.spinner("Getting data..."):
+                        aircrafts, run_time = scrape_page()
+                        insert_aircraft(aircrafts, run_time)
+                    st.session_state.update_ok = True
+                    st.rerun()
+                except:
+                    st.error(":red-background[Error]")
+
+            if st.session_state.update_ok:
+                st.toast(":green-background[Data updated successfully]")
         
         with col_right:
             ts = pd.to_datetime(df["timestamp"]).max()
@@ -68,3 +110,4 @@ with st.container(border=True):
                  f"<div style='text-align: right;'>Last data update: {pretty}</div>",
                 unsafe_allow_html=True,
             )
+
