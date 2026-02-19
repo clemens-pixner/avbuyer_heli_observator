@@ -61,7 +61,7 @@ st.title("Helicopter market-dashboard")
 col_1, col_2, = st.columns([0.3, 0.7], border=True)
 
 with col_1:
-    st.markdown(":blue-background[Listing overview]")
+    st.markdown("**Listing overview**")
     st.write("")
 
     chart_df = (
@@ -73,7 +73,7 @@ with col_1:
 
     chart = (
         alt.Chart(chart_df) 
-        .mark_bar(color=("#0000ff"))
+        .mark_bar(color=("#7A1CAC"))
         .encode(
             x=alt.X("Brand:N"),
             y=alt.Y("Listings:Q"),
@@ -94,7 +94,7 @@ with col_2:
     with col_3:
         brands = brand_selectbox(df)
         selected_brand = st.selectbox(
-            ":blue-background[Brand]",
+            "**Brand**",
             brands, 
             index=None, 
             placeholder="Select brand..."
@@ -129,7 +129,7 @@ with col_2:
         )
 
     with col_4:
-        st.write(":blue-background[Market situation]")
+        st.write("**Market situation**")
 
         if selected_brand is None:
             st.bar_chart()
@@ -146,35 +146,32 @@ with col_2:
 
             plot_df = brand_df[brand_df["price"] >= min_selected].copy()
 
-            if plot_df.empty:
-                st.info("Keine Modelle im gewählten Bereich.")
-            else:
-                bars = alt.Chart(plot_df).mark_bar(color="#0000ff").encode(
-                    x=alt.X("listing_key:N", sort="-y", title="Listing / Model"),
-                    y=alt.Y("price:Q", title="Price (€)"),
-                    tooltip=[
-                        alt.Tooltip("model:N", title="Model"),
-                        alt.Tooltip("price:Q", title="Price", format=",.0f"),
-                    ],
-                )
+            bars = alt.Chart(plot_df).mark_bar(color="#7A1CAC").encode(
+                x=alt.X("listing_key:N", sort="-y", title="Listing / Model"),
+                y=alt.Y("price:Q", title="Price (€)"),
+                tooltip=[
+                    alt.Tooltip("model:N", title="Model"),
+                    alt.Tooltip("price:Q", title="Price", format=",.0f"),
+                ],
+            )
 
-                highlight = (
-                    alt.Chart(plot_df)
-                    .mark_bar(color="#00ff15")
-                    .encode(
-                        x=alt.X("listing_key:N", sort="-y"),
-                        y="price:Q",
-                        y2=alt.value(threshold),
-                    )
-                    .transform_filter(alt.datum.price > threshold)
+            highlight = (
+                alt.Chart(plot_df)
+                .mark_bar(color="#AD49E1")
+                .encode(
+                    x=alt.X("listing_key:N", sort="-y"),
+                    y="price:Q",
+                    y2=alt.value(threshold),
                 )
+                .transform_filter(alt.datum.price > threshold)
+            )
 
-                rule_df = pd.DataFrame({"threshold": [threshold]})
-                rule = alt.Chart(rule_df).mark_rule(color="#2fff00", strokeDash=[6, 4]).encode(
-                    y="threshold:Q"
-                )
+            rule_df = pd.DataFrame({"threshold": [threshold]})
+            rule = alt.Chart(rule_df).mark_rule(color="2E073F", strokeDash=[6, 4]).encode(
+                y="threshold:Q"
+            )
 
-                st.altair_chart((bars + highlight + rule).properties(height=360), use_container_width=True)
+            st.altair_chart((bars + highlight + rule).properties(height=360), use_container_width=True)
 
             
 col_5, col_6 = st.columns(2, border=True)
@@ -184,7 +181,7 @@ with col_5:
     st.write("Primary:", st.get_option("theme.primaryColor"))
 
 with col_6:
-    st.markdown(":blue-background[Raw data]")
+    st.markdown("**Raw data**")
     dataframe(df)
 
 with st.container(border=True):
@@ -203,7 +200,7 @@ with st.container(border=True):
                     st.session_state.update_ok = True
                     st.rerun()
                 except:
-                    st.error(":red-background[Error]")
+                    st.error("Error")
 
             if st.session_state.update_ok:
                 st.toast(":green-background[Data updated successfully]")
