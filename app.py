@@ -73,14 +73,14 @@ with col_1:
 
     chart = (
         alt.Chart(chart_df) 
-        .mark_bar(color=("#7A1CAC"))
+        .mark_bar(color=("#226597"))
         .encode(
             x=alt.X("Brand:N"),
             y=alt.Y("Listings:Q"),
             tooltip=["Brand:N", "Listings:Q"],
         )
         .properties(height=320)
-    )
+    ).configure_axis(labelColor="#113F67", titleColor="#113F67")
 
     st.altair_chart(chart, use_container_width=True)
 
@@ -138,40 +138,57 @@ with col_2:
             brand_df["eur_price"] = pd.to_numeric(brand_df["eur_price"], errors="coerce")
             brand_df = brand_df.dropna(subset=["model", "eur_price"]).reset_index(drop=True)
 
+            brand_df["listing_no"] = brand_df.index + 1
             brand_df["price"] = brand_df["eur_price"]
-            brand_df["listing_key"] = brand_df.index.astype(str) + " | " + brand_df["model"].astype(str)
+            brand_df["listing_key"] = brand_df["listing_no"].astype(str) + " | " + brand_df["model"].astype(str)
 
             min_selected, max_selected = price_range
             threshold = max_selected
 
             plot_df = brand_df[brand_df["price"] >= min_selected].copy()
+            plot_df = plot_df.sort_values("listing_no")
 
-            bars = alt.Chart(plot_df).mark_bar(color="#7A1CAC").encode(
-                x=alt.X("listing_key:N", sort="-y", title="Listing / Model"),
-                y=alt.Y("price:Q", title="Price (€)"),
-                tooltip=[
-                    alt.Tooltip("model:N", title="Model"),
-                    alt.Tooltip("price:Q", title="Price", format=",.0f"),
-                ],
-            )
+            if plot_df.empty:
+                st.info("Keine Modelle im gewählten Bereich.")
+            else:
+                plot_df["base_top"] = plot_df["price"].clip(upper=threshold)
+                sort_order = plot_df["listing_key"].tolist()
 
-            highlight = (
-                alt.Chart(plot_df)
-                .mark_bar(color="#AD49E1")
-                .encode(
-                    x=alt.X("listing_key:N", sort="-y"),
-                    y="price:Q",
-                    y2=alt.value(threshold),
+                x_enc = alt.X(
+                    "listing_key:N",
+                    sort=sort_order,
+                    title="Listing / Model"
                 )
-                .transform_filter(alt.datum.price > threshold)
-            )
 
-            rule_df = pd.DataFrame({"threshold": [threshold]})
-            rule = alt.Chart(rule_df).mark_rule(color="2E073F", strokeDash=[6, 4]).encode(
-                y="threshold:Q"
-            )
+                bars = alt.Chart(plot_df).mark_bar(color="#226597").encode(
+                    x=x_enc,
+                    y=alt.Y("base_top:Q", title="Price (€)"),
+                    tooltip=[
+                        alt.Tooltip("model:N", title="Model"),
+                        alt.Tooltip("price:Q", title="Price", format=",.0f"),
+                    ],
+                )
 
-            st.altair_chart((bars + highlight + rule).properties(height=360), use_container_width=True)
+                highlight = (
+                    alt.Chart(plot_df)
+                    .transform_filter(alt.datum.price > threshold)
+                    .mark_bar(color="#87C0CD")
+                    .encode(
+                        x=x_enc,
+                        y=alt.Y("price:Q"),
+                        y2=alt.Y2("base_top:Q"),
+                    )
+                )
+
+                rule_df = pd.DataFrame({"threshold": [threshold]})
+                rule = alt.Chart(rule_df).mark_rule(color="#2E073F", strokeDash=[6, 4]).encode(
+                    y="threshold:Q"
+                )
+
+                layered = alt.layer(bars, highlight, rule).properties(height=360)
+                layered = layered.configure_axis(labelColor="#113F67", titleColor="#113F67")
+                st.altair_chart(layered, use_container_width=True)
+
 
             
 col_5, col_6 = st.columns(2, border=True)
@@ -199,8 +216,8 @@ with st.container(border=True):
                         insert_aircraft(aircrafts, run_time)
                     st.session_state.update_ok = True
                     st.rerun()
-                except:
-                    st.error("Error")
+                except Exception as e:
+                    st.error(f"Error {e}")
 
             if st.session_state.update_ok:
                 st.toast(":green-background[Data updated successfully]")

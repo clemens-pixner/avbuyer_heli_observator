@@ -3,16 +3,16 @@
 base = "dark"
 
 # General color setup
-textColor = "#2E073F"
-primaryColor = "#7A1CAC"
-backgroundColor = "#EBD3F8"
-secondaryBackgroundColor = "#7A1CAC"
+textColor = "#113F67"
+primaryColor = "#226597"
+backgroundColor = "#F3F9FB"
+secondaryBackgroundColor = "#87C0CD"
 
 showWidgetBorder = true
-borderColor = "#314158"
+borderColor = "#113F67"
 
 # Dataframes
-dataframeHeaderBackgroundColor = "#1d293d"
+dataframeHeaderBackgroundColor = "#87C0CD"
 
 # Base text
 font = "'Space Grotesk':https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"
